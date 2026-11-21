@@ -1,0 +1,46 @@
+name: Публикация slovohod.com
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: '17 * * * *'
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.d.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: ygonyaev-svg/uroki
+          sparse-checkout: docs/semya
+          path: src
+      - name: Собрать сайт
+        run: |
+          mkdir site && cp -r src/docs/semya/. site/
+          D=https://slovohod.com
+          U=https://ygonyaev-svg.github.io/uroki/
+          cd site
+          sed -i -e "s#<base href=\"../\">#<base href=\"$U\">#" \
+                 -e "s#semya/ustanovka.html#$D/ustanovka.html#g" \
+                 -e "s#semya/manifest.webmanifest#$D/manifest.webmanifest#g" \
+                 -e "s#semya/icon-#$D/icon-#g" \
+                 -e "s#semya/logo.webp#$D/logo.webp#g" index.html
+          sed -i "s#https://ygonyaev-svg.github.io/uroki/semya/#$D/#g" admin.html
+          sed -i "s#ygonyaev-svg.github.io#slovohod.com#g" ustanovka.html
+          echo slovohod.com > CNAME
+          grep -c "$U" index.html
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: d
+        uses: actions/deploy-pages@v4

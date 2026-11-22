@@ -39,8 +39,8 @@ jobs:
           sed -i "s#ygonyaev-svg.github.io#slovohod.com#g" ustanovka.html
           echo slovohod.com > CNAME
           grep -c "$U" index.html
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: site
       - id: d
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

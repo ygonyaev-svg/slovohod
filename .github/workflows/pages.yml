@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.d.outputs.page_url }}
+      url: ${{ steps.d1.outputs.page_url || steps.d2.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -42,5 +42,12 @@ jobs:
       - uses: actions/upload-pages-artifact@v5
         with:
           path: site
-      - id: d
+      - id: d1
+        continue-on-error: true
+        uses: actions/deploy-pages@v5
+      - name: Пауза перед повтором
+        if: steps.d1.outcome == 'failure'
+        run: sleep 30
+      - id: d2
+        if: steps.d1.outcome == 'failure'
         uses: actions/deploy-pages@v5
